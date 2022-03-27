@@ -1,10 +1,11 @@
 package com.example.jaydean.tutorial
-
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.*
 import com.example.jaydean.tutorial.data.Datasource
 import java.util.*
+import android.support.v7.widget.RecyclerView
+import com.example.jaydean.tutorial.adapter.ItemAdapter
 
 /**
  * This activity allows the user to roll a dice and view the result
@@ -56,8 +57,6 @@ class MainActivity : AppCompatActivity() {
         lemonImage!!.setOnLongClickListener {
             // TODO: replace 'false' with a call to the function that shows the squeeze count
             showSnackbar()
-
-
         }
 
         // ********************************************
@@ -74,15 +73,12 @@ class MainActivity : AppCompatActivity() {
         val minute = c.get(Calendar.MINUTE)
 
         textViewTime.text = textViewTime.text.toString() + c.time.toString()
-
         btnTime.setOnClickListener {
             var inputTime = hour
             if (textInput.text.toString().trim().length > 0){
                 inputTime = textInput.text.toString().toInt()
             }
-
             getBonusRules(inputTime, minute, switchIsWeekend.isChecked)
-
             if (inputTime in 8..17){
                 val toast = Toast.makeText(this, "Still working...", Toast.LENGTH_SHORT)
                 toast.show()
@@ -95,14 +91,21 @@ class MainActivity : AppCompatActivity() {
                 val toast = Toast.makeText(this, "Unknown Time:" + inputTime.toString() + ":" + minute.toString(), Toast.LENGTH_SHORT)
                 toast.show()
             }
-
-
         }
 
-        // ==============================
+        // ============================== 列表 ==========================
         val textView: TextView = findViewById(R.id.textView2) as TextView
         textView.text = Datasource().loadAffirmations().size.toString()
 
+        // Initialize data.
+        val myDataset = Datasource().loadAffirmations()
+
+        val recyclerView = findViewById(R.id.recycler_view) as RecyclerView
+        recyclerView.adapter = ItemAdapter(this, myDataset)
+
+        // Use this setting to improve performance if you know that changes
+        // in content do not change the layout size of the RecyclerView
+        recyclerView.setHasFixedSize(true)
     }
     /**
      * === DO NOT ALTER THIS METHOD ===
