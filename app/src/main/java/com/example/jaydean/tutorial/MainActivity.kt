@@ -2,11 +2,8 @@ package com.example.jaydean.tutorial
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.ImageView
-import android.widget.Toast
-import android.widget.TextView
+import android.widget.*
+import com.example.jaydean.tutorial.data.Datasource
 import java.util.*
 
 /**
@@ -41,24 +38,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Find the Button in the layout
         val rollButton: Button = findViewById(R.id.button) as Button
-
-        // Set a click listener on the button to roll the dice when the user taps the button
         rollButton.setOnClickListener { rollDice() }
-
         // Do a dice roll when the app starts
         rollDice()
-
-
-        // === DO NOT ALTER THE CODE IN THE FOLLOWING IF STATEMENT ===
         if (savedInstanceState != null) {
             lemonadeState = savedInstanceState.getString(LEMONADE_STATE, "select")
             lemonSize = savedInstanceState.getInt(LEMON_SIZE, -1)
             squeezeCount = savedInstanceState.getInt(SQUEEZE_COUNT, -1)
         }
-        // === END IF STATEMENT ===
-
         lemonImage = findViewById(R.id.image_lemon_state) as ImageView
         setViewElements()
         lemonImage!!.setOnClickListener {
@@ -69,7 +57,52 @@ class MainActivity : AppCompatActivity() {
             // TODO: replace 'false' with a call to the function that shows the squeeze count
             showSnackbar()
 
+
         }
+
+        // ********************************************
+        val textInput: EditText = findViewById(R.id.editText) as EditText
+        val textViewTime: TextView = findViewById(R.id.textView) as TextView
+        val btnTime: Button = findViewById(R.id.btnGetTime) as Button
+        val switchIsWeekend: Switch = findViewById(R.id.switch1) as Switch
+
+        val c = Calendar.getInstance()
+        val year = c.get(Calendar.YEAR)
+        val month = c.get(Calendar.MONTH)
+        val day = c.get(Calendar.DAY_OF_MONTH)
+        val hour = c.get(Calendar.HOUR_OF_DAY)
+        val minute = c.get(Calendar.MINUTE)
+
+        textViewTime.text = textViewTime.text.toString() + c.time.toString()
+
+        btnTime.setOnClickListener {
+            var inputTime = hour
+            if (textInput.text.toString().trim().length > 0){
+                inputTime = textInput.text.toString().toInt()
+            }
+
+            getBonusRules(inputTime, minute, switchIsWeekend.isChecked)
+
+            if (inputTime in 8..17){
+                val toast = Toast.makeText(this, "Still working...", Toast.LENGTH_SHORT)
+                toast.show()
+            }
+            else if (inputTime > 20){
+                val toast = Toast.makeText(this, "Bonus 15 yuan", Toast.LENGTH_SHORT)
+                toast.show()
+            }
+            else {
+                val toast = Toast.makeText(this, "Unknown Time:" + inputTime.toString() + ":" + minute.toString(), Toast.LENGTH_SHORT)
+                toast.show()
+            }
+
+
+        }
+
+        // ==============================
+        val textView: TextView = findViewById(R.id.textView2) as TextView
+        textView.text = Datasource().loadAffirmations().size.toString()
+
     }
     /**
      * === DO NOT ALTER THIS METHOD ===
@@ -83,6 +116,40 @@ class MainActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
     }
 
+    private fun getBonusRules(hours:Int,minutes:Int, isWeekend: Boolean):Int{
+        var current = minutes / 60.0 + hours
+        if (!isWeekend){
+            if (current in 8.5..18.0){
+                val toast = Toast.makeText(this, "Still working...", Toast.LENGTH_SHORT)
+                toast.show()
+                return  0
+            }
+            else if (current > 20.5){
+                val toast = Toast.makeText(this, "Bonus 15 yuan", Toast.LENGTH_SHORT)
+                toast.show()
+                return  15
+            }
+            else if (current in 0.0..8.5){
+                val toast = Toast.makeText(this, "Get Some Sleep, 40 yuan not worth it!", Toast.LENGTH_SHORT)
+                toast.show()
+                return  40
+            }
+            else {
+                val toast = Toast.makeText(this, "Err:" + current.toString(), Toast.LENGTH_SHORT)
+                toast.show()
+                return  0
+            }
+        }
+        else{
+            // todo
+            val toast = Toast.makeText(this, "4 to 8 hours you get 28, 9+ hours you get 43!", Toast.LENGTH_LONG)
+            toast.show()
+            return  0
+        }
+
+
+
+    }
     /**
      * Clicking will elicit a different response depending on the state.
      * This method determines the state and proceeds with the correct action.
